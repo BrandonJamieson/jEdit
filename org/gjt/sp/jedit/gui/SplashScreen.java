@@ -21,9 +21,13 @@ package org.gjt.sp.jedit.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Scanner;
+import java.util.*;
+import java.util.Vector;
 
 import org.gjt.sp.jedit.jEdit;
 import org.gjt.sp.util.Log;
+import org.gjt.sp.jedit.*;
 
 /**
  * The splash screen displayed on startup.
@@ -35,10 +39,31 @@ public class SplashScreen extends JComponent
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		setBackground(Color.white);
-
+		
 		Font font = new Font("Dialog",Font.PLAIN,10);
 		setFont(font);
 		fm = getFontMetrics(font);
+
+		text = new Vector(50);
+
+		// Currently, text is hardcoded in instead of going through "about.me"
+		text.addElement("Brandon Jamieson");
+		text.addElement("bmj920");
+		text.addElement("11180352");
+		text.addElement("CMPT-470");
+		text.addElement("Assignment 2");
+		
+		/*
+		StringTokenizer st = new StringTokenizer(jEdit.getProperty("about.text"),"\n");
+		
+		while(st.hasMoreTokens())
+		{
+			String line = st.nextToken();
+			text.addElement(line);
+			maxWidth = Math.max(maxWidth,fm.stringWidth(line) + 10);
+		}
+		
+		*/
 
 		image = getToolkit().getImage(
 			getClass().getResource("/org/gjt/sp/jedit/icons/splash.png"));
@@ -53,7 +78,14 @@ public class SplashScreen extends JComponent
 		{
 			Log.log(Log.ERROR,this,e);
 		}
+		
 
+		scrollPosition = -250;
+		TOP = 20;
+		BOTTOM = getHeight() - 20;
+		thread = new AnimationThread();
+		
+		
 		win = new JWindow();
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
@@ -74,7 +106,7 @@ public class SplashScreen extends JComponent
 
 	public void dispose()
 	{
-		win.dispose();
+		//win.dispose();
 	}
 
 	public synchronized void advance()
@@ -155,21 +187,107 @@ public class SplashScreen extends JComponent
 		}
 
 
-		String version = jEdit.getVersion();
-		g.drawString(version,
-			getWidth() - fm.stringWidth(version) - 2,
-			image.getHeight(this) - fm.getDescent());
+		int height = fm.getHeight();
+		int firstLine = scrollPosition / height;
+
+		int firstLineOffset = height - scrollPosition % height;
+		int lines = (getHeight() - TOP - BOTTOM) / height;
+
+		int y = firstLineOffset;
+
+		for(int i = 0; i <= lines; i++)
+		{
+			if(i + firstLine >= 0 && i + firstLine < text.size())
+			{
+				String line = (String)text.get(i + firstLine);
+				g.drawString(line, (getWidth() / 2) - (fm.stringWidth(line) / 2),y);
+			}
+			y += fm.getHeight();
+		}
+		
+		
 		notify();
+	}
+
+	public void addNotify()
+	{
+		super.addNotify();
+		thread.start();
+	}
+
+	public void removeNotify()
+	{
+		super.removeNotify();
+		thread.kill();
+	}
+
+	class AnimationThread extends Thread
+	{
+		private boolean running = true;
+		private long last;
+		
+
+		AnimationThread()
+		{
+			super("About box animation thread");
+			setPriority(Thread.MIN_PRIORITY);
+		}
+		
+		public void kill()
+		{
+			running = false;
+		}
+
+		public void run()
+		{
+			FontMetrics fm = getFontMetrics(getFont());
+			int max = (text.size() * fm.getHeight());
+
+			while (running)
+			{
+				scrollPosition += 1;
+
+				if(scrollPosition > max)
+					scrollPosition = -250;
+
+				if(last != 0)
+				{
+					long frameDelay =
+						System.currentTimeMillis()
+						- last;
+
+					try
+					{
+						Thread.sleep(
+							75
+							- frameDelay);
+					}
+					catch(Exception e)
+					{
+					}
+				}
+
+				last = System.currentTimeMillis();
+
+				repaint(getWidth() / 2 - maxWidth, TOP ,maxWidth * 2, getHeight() - TOP - BOTTOM);
+			}
+		}
 	}
 
 	// private members
 	private final FontMetrics fm;
 	private final JWindow win;
 	private final Image image;
+	Vector text;
 	private int progress;
 	private static final int PROGRESS_HEIGHT = 20;
 	private static final int PROGRESS_COUNT = 28;
+	private static int maxWidth = 100;
+	private int TOP;
+	private int BOTTOM;
+	private AnimationThread thread;
 	private String label;
 	private String lastLabel;
 	private long lastAdvanceTime = System.currentTimeMillis();
+	private int scrollPosition;
 }
