@@ -26,6 +26,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import java.time.*;
 
 /**
  * This class provides methods for logging events. In terms of functionality,
@@ -354,8 +355,13 @@ public class Log
 	//{{{ _log() method
 	private static void _log(int urgency, String source, String message)
 	{
-		String fullMessage = '[' + urgencyToString(urgency) + "] " + source
-			+ ": " + message;
+		String fullMessage = new Date().toString()
+								+ " [" 
+								+ urgencyToString(urgency) 
+								+ "] " 
+								+ source
+								+ ": " 
+								+ message;
 
 		try
 		{
@@ -365,7 +371,7 @@ public class Log
 				wrap = true;
 				logLineCount = 0;
 			}
-
+ 
 			if(stream != null)
 			{
 				stream.write(fullMessage);
