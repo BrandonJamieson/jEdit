@@ -46,14 +46,6 @@ public class SplashScreen extends JComponent
 
 		text = new Vector(50);
 
-		// Currently, text is hardcoded in instead of going through "about.me"
-		text.addElement("Brandon Jamieson");
-		text.addElement("bmj920");
-		text.addElement("11180352");
-		text.addElement("CMPT-470");
-		text.addElement("Assignment 2");
-		
-		/*
 		StringTokenizer st = new StringTokenizer(jEdit.getProperty("about.text"),"\n");
 		
 		while(st.hasMoreTokens())
@@ -62,8 +54,6 @@ public class SplashScreen extends JComponent
 			text.addElement(line);
 			maxWidth = Math.max(maxWidth,fm.stringWidth(line) + 10);
 		}
-		
-		*/
 
 		image = getToolkit().getImage(
 			getClass().getResource("/org/gjt/sp/jedit/icons/splash.png"));
@@ -106,7 +96,7 @@ public class SplashScreen extends JComponent
 
 	public void dispose()
 	{
-		//win.dispose();
+		win.dispose();
 	}
 
 	public synchronized void advance()
@@ -278,7 +268,7 @@ public class SplashScreen extends JComponent
 	private final FontMetrics fm;
 	private final JWindow win;
 	private final Image image;
-	Vector text;
+	private Vector text;
 	private int progress;
 	private static final int PROGRESS_HEIGHT = 20;
 	private static final int PROGRESS_COUNT = 28;
